@@ -26,7 +26,6 @@ namespace Stencil
             {
                 while(true)
                 {
-                    //var charNum = reader.Read();
                     var c = reader.Read();
 
                     if (c == -1)
@@ -39,12 +38,11 @@ namespace Stencil
                         while(c != '}') // read until done
                         {
                             c = (char)reader.Read();
+
                             if(c == '}')
-                            {
-                                c = (char)reader.Read();
                                 break;
-                            }
-                            ruleName += Char.ToLower((char)c);
+
+                            ruleName += char.ToLower((char)c);
                         }
 
                         var rule = _rules.FirstOrDefault(r => r.RuleNameLowerCase == ruleName);
@@ -74,7 +72,7 @@ namespace Stencil
                     else
                     {
                         // add characters to the template
-                        sb.Append(c);
+                        sb.Append((char)c);
                     }
                 }
             }

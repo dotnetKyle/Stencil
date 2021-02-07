@@ -74,7 +74,17 @@ namespace Stencil.Tests
             }
 
             var average = ticks.Average();
-            Assert.Less(average, 50, $"Average time to run the template engine is too high: {average} ticks");
+            Assert.Less(average, 80, $"Average time to run the template engine is too high: {average} ticks");
+        }
+        [Test]
+        public void LFMB()
+        {
+
+            // Act
+            var result = engine.GetResult("{LastName-WithComma} {firstName} {MiddleInitial-WithPeriod} {business}",
+                new { firstName = "John", LastName = "Smith", MiddleName = "Robert", Business = "XYZ Plumbing" });
+
+            Assert.AreEqual("Smith, John R. (XYZ Plumbing)", result);
         }
 
         [Test]
