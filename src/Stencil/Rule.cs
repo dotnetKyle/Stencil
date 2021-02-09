@@ -1,45 +1,80 @@
 ﻿using System;
+using System.IO;
+using System.Linq.Expressions;
+using System.Reflection;
 
 namespace Stencil
 {
-    public class Rule
+    public abstract class Rule2<T> where T : class
     {
-        private Rule() { }
+        public string RuleName { get; set; }
+        public string RuleNameLowerCase { get; set; }
+        public string RuleNameLowerCaseWithBrackets { get; set; }
+        public string PropertyName { get; set; }
+        public string Stencil { get; set; }
+        public PropertyInfo PropertyInfo { get; set; }
 
-        public string RuleName { get; private set; }
-        public string RuleNameLowerCase { get; private set; }
-        public string RuleNameLowerCaseWithBrackets { get; private set; }
-        public string PropertyName { get; private set; }
-        public string Stencil { get; private set; }
-        public Func<object, string> Setup { get; private set; }
-
-        public static Rule New(string ruleName, string stencil = "", string propertyName = "", Func<object, string> setup = null)
-        {
-            if (string.IsNullOrWhiteSpace(ruleName))
-                throw new ArgumentException("The name of the rule is required.", nameof(ruleName));
-
-            return new Rule
-            {
-                RuleName = ruleName,
-                RuleNameLowerCase = ruleName.ToLower(),
-                RuleNameLowerCaseWithBrackets = '{' + ruleName.ToLower() + '}',
-
-                PropertyName = string.IsNullOrWhiteSpace(propertyName)
-                    ? ruleName.ToLower()
-                    : propertyName.ToLower(),
-
-                Setup = setup,
-
-                Stencil = string.IsNullOrWhiteSpace(stencil)
-                    ? "{}"
-                    : stencil
-            };
-        }
+        public abstract void ExecuteRule(T obj, StencilWriter writer);
 
         public override string ToString()
         {
             return $"Rule:{{{RuleName}}}";
         }
     }
+    public sealed class Rule2<T, TValue> : Rule2<T> where T : class
+    {
+        public Rule2() { }
 
+        public Func<TValue, string> Setup { get; set; }
+        public Expression<Func<T, TValue>> PropertyExpression { get; set; }
+
+        public static Rule2<T, TValue> New(Expression<Func<T, TValue>> propertyExpression)
+        {
+            var memberExpr = propertyExpression.Body as MemberExpression 
+                ?? throw new ArgumentException("The property expression must be a Member");
+
+            var propInfo = memberExpr.Member as PropertyInfo 
+                ?? throw new ArgumentException("The property expression must be a Property");
+
+            return new Rule2<T, TValue>
+            {
+                PropertyInfo = propInfo
+            };
+        }
+
+        public override void ExecuteRule(T obj, StencilWriter writer)
+        {
+            var propValue = (TValue)PropertyInfo.GetValue(obj);
+
+            if (propValue == null)
+                return;
+
+            var processedValue = (Setup != null)
+                ? Setup(propValue)
+                : propValue.ToString();
+
+            using(var reader = new StringReader(Stencil)) // use the stencil
+            {
+                while(true)
+                {
+                    var c = reader.Read();
+
+                    if (c == -1)
+                        break;
+
+                    if(c == '{' && reader.Peek() == '}')
+                    {
+                        // Write the value
+                        writer.Write(processedValue);
+                        // then skip closing bracket
+                        reader.Read();
+                    }
+                    else
+                    {
+                        writer.Write((char)c);
+                    }
+                }
+            }
+        }
+    }
 }
