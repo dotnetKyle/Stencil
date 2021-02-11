@@ -5,7 +5,7 @@ using System.Reflection;
 
 namespace Stencil
 {
-    public abstract class Rule2<T> where T : class
+    public abstract class Rule<T> where T : class
     {
         public string RuleName { get; set; }
         public string RuleNameLowerCase { get; set; }
@@ -21,14 +21,14 @@ namespace Stencil
             return $"Rule:{{{RuleName}}}";
         }
     }
-    public sealed class Rule2<T, TValue> : Rule2<T> where T : class
+    public sealed class Rule<T, TValue> : Rule<T> where T : class
     {
-        public Rule2() { }
+        public Rule() { }
 
         public Func<TValue, string> Setup { get; set; }
         public Expression<Func<T, TValue>> PropertyExpression { get; set; }
 
-        public static Rule2<T, TValue> New(Expression<Func<T, TValue>> propertyExpression)
+        public static Rule<T, TValue> New(Expression<Func<T, TValue>> propertyExpression)
         {
             var memberExpr = propertyExpression.Body as MemberExpression 
                 ?? throw new ArgumentException("The property expression must be a Member");
@@ -36,7 +36,7 @@ namespace Stencil
             var propInfo = memberExpr.Member as PropertyInfo 
                 ?? throw new ArgumentException("The property expression must be a Property");
 
-            return new Rule2<T, TValue>
+            return new Rule<T, TValue>
             {
                 PropertyInfo = propInfo
             };

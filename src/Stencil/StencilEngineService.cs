@@ -13,7 +13,7 @@ namespace Stencil
 
         StencilEngineService()
         {
-            _rules = new List<Rule2<T>>();
+            _rules = new List<Rule<T>>();
             _properties = typeof(T).GetProperties();
         }
 
@@ -32,7 +32,7 @@ namespace Stencil
             };
         }
 
-        List<Rule2<T>> _rules;
+        List<Rule<T>> _rules;
         PropertyInfo[] _properties;
 
         /// <summary>
@@ -51,6 +51,9 @@ namespace Stencil
 
         public string GetResult(T obj)
         {
+            if (obj == null) 
+                return "";
+
             var template = (string)StoredTemplateProperty.GetValue(obj);
             if (string.IsNullOrWhiteSpace(template))
                 template = DefaultTemplate;
@@ -122,7 +125,7 @@ namespace Stencil
         /// <summary>
         /// Add a rule to the engine
         /// </summary>
-        internal void AddRule(Rule2<T> rule)
+        internal void AddRule(Rule<T> rule)
         {
             if (rule == null)
                 throw new ArgumentException("Rule cannot be null",  nameof(rule));

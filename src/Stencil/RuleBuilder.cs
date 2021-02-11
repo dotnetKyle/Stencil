@@ -71,7 +71,7 @@ namespace Stencil
                 throw new Exception($"Duplicate rule name: {{{RuleName}}}");
 
             _service.AddRule(
-                new Rule2<T, TValue>
+                new Rule<T, TValue>
                 {
                     PropertyExpression = PropertyExpression,
                     PropertyInfo = propInfo,

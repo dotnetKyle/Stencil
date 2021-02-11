@@ -246,5 +246,14 @@ namespace Stencil.Tests
 
             Assert.IsFalse(result.Contains("ruleNotFound"), "The not found rule was not removed");
         }
+
+        [Test]
+        public void NullObject()
+        {
+            // Act
+            var result = engine.GetResult(null);
+
+            Assert.AreEqual("", result, "The result should have been an empty string");
+        }
     }
 }
